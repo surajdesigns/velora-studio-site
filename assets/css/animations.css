@@ -1,0 +1,101 @@
+/* ===== ANIMATIONS.CSS — Velora Studio V2 ===== */
+/* GSAP-powered animation utilities & keyframes */
+
+/* Hidden states for GSAP scroll reveals */
+.reveal{opacity:0;transform:translateY(30px);will-change:transform,opacity}
+.reveal-left{opacity:0;transform:translateX(-40px);will-change:transform,opacity}
+.reveal-right{opacity:0;transform:translateX(40px);will-change:transform,opacity}
+.reveal-scale{opacity:0;transform:scale(.9);will-change:transform,opacity}
+
+/* Stagger containers */
+.stagger-children>*{opacity:0;transform:translateY(20px)}
+
+/* Glow animations */
+@keyframes glow-pulse{
+  0%,100%{box-shadow:0 0 20px rgba(99,102,241,.2)}
+  50%{box-shadow:0 0 40px rgba(99,102,241,.4)}
+}
+.glow-animate{animation:glow-pulse 3s ease-in-out infinite}
+
+/* Floating animation */
+@keyframes gentle-float{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-10px)}
+}
+.float-animate{animation:gentle-float 4s ease-in-out infinite}
+
+/* Shimmer effect */
+@keyframes shimmer{
+  0%{background-position:-200% center}
+  100%{background-position:200% center}
+}
+.shimmer{background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.05) 50%,transparent 100%);background-size:200% 100%;animation:shimmer 3s linear infinite}
+
+/* Gradient text animation */
+@keyframes gradient-shift{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+.gradient-animated{background-size:200% 200%;animation:gradient-shift 4s ease infinite}
+
+/* Card tilt glow */
+.tilt-glow{transition:transform .4s cubic-bezier(.25,.46,.45,.94),box-shadow .4s}
+.tilt-glow:hover{box-shadow:0 20px 60px rgba(99,102,241,.15),0 0 0 1px rgba(99,102,241,.1)}
+
+/* Magnetic button effect */
+.btn-magnetic{transition:transform .2s ease}
+
+/* Loading skeleton */
+@keyframes skeleton-pulse{
+  0%{opacity:.6}
+  50%{opacity:.3}
+  100%{opacity:.6}
+}
+.skeleton{background:var(--bg-elevated);border-radius:var(--radius-sm);animation:skeleton-pulse 1.5s infinite}
+
+/* Page transition */
+.page-transition{opacity:0;animation:page-enter .6s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes page-enter{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* Counter animation helper */
+.counter-animate{display:inline-block;min-width:2ch}
+
+/* Orb animation */
+@keyframes orb-drift{
+  0%,100%{transform:translate(0,0) scale(1)}
+  25%{transform:translate(30px,-20px) scale(1.05)}
+  50%{transform:translate(-10px,20px) scale(.95)}
+  75%{transform:translate(-30px,-10px) scale(1.02)}
+}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;animation:orb-drift 15s ease-in-out infinite}
+.orb-blue{background:var(--accent-blue);opacity:.08}
+.orb-purple{background:var(--accent-purple);opacity:.06}
+
+/* Hover lift */
+.hover-lift{transition:transform .3s cubic-bezier(.4,0,.2,1),box-shadow .3s}
+.hover-lift:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.3)}
+
+/* Selection glow pulse */
+@keyframes sel-glow{
+  0%{box-shadow:0 0 0 0 rgba(99,102,241,.5)}
+  50%{box-shadow:0 0 0 8px rgba(99,102,241,.1)}
+  100%{box-shadow:0 0 0 3px rgba(99,102,241,.2)}
+}
+
+/* Line reveal */
+@keyframes line-grow{
+  from{transform:scaleX(0)}
+  to{transform:scaleX(1)}
+}
+.line-reveal{transform-origin:left;animation:line-grow .8s cubic-bezier(.4,0,.2,1) forwards}
+
+/* Typewriter cursor */
+@keyframes cursor-blink{
+  0%,100%{opacity:1}
+  50%{opacity:0}
+}
+.cursor-blink::after{content:'|';animation:cursor-blink 1s step-end infinite;color:var(--accent-blue)}
