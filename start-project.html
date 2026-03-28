@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Start a Project — Velora Studio</title>
+  <meta name="description" content="Tell us about your project and let Velora Studio help you build something exceptional." />
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- ═══════════════════════════════════════════
+       SMART CALCULATOR — ADDITIONAL STYLES
+       (layered on top of style.css, no overrides)
+  ════════════════════════════════════════════ -->
+  <style>
+    /* ── Step transitions ── */
+    .step-panel {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.38s cubic-bezier(.4,0,.2,1),
+                  transform 0.38s cubic-bezier(.4,0,.2,1);
+      pointer-events: none;
+      display: none;
+    }
+    .step-panel.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: all;
+      display: block;
+    }
+    .step-panel.exit-left {
+      opacity: 0;
+      transform: translateY(-12px);
+    }
+
+    /* ── Business Type Cards ── */
+    .biz-type-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+      margin-bottom: 32px;
+    }
+    .biz-card {
+      position: relative;
+      border: 1.5px solid var(--border, #2a2a2a);
+      border-radius: 14px;
+      padding: 22px 20px 18px;
+      cursor: pointer;
+      background: var(--card-bg, #0f0f0f);
+      transition: border-color 0.22s, box-shadow 0.22s, transform 0.18s;
+      overflow: hidden;
+      user-select: none;
+    }
+    .biz-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(ellipse at 50% -20%, rgba(99,102,241,0.18) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .biz-card:hover {
+      border-color: rgba(99,102,241,0.55);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 28px rgba(99,102,241,0.12);
+    }
+    .biz-card:hover::before { opacity: 1; }
+    .biz-card.selected {
+      border-color: var(--accent-blue, #6366f1);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.22), 0 8px 32px rgba(99,102,241,0.18);
+      background: linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(139,92,246,0.06) 100%);
+    }
+    .biz-card.selected::before { opacity: 1; }
+    .biz-card-icon {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .biz-card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-primary, #fff);
+      margin-bottom: 4px;
+    }
+    .biz-card-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted, #666);
+      line-height: 1.4;
+    }
+    .biz-card-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: var(--accent-blue, #6366f1);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 20px;
+      opacity: 0;
+      transform: scale(0.7);
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .biz-card.selected .biz-card-badge {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .biz-card-price {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: var(--accent-blue, #6366f1);
+      font-weight: 600;
+    }
+
+    /* ── Config section in Step 2 ── */
+    .config-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    @media (max-width: 600px) {
+      .config-grid { grid-template-columns: 1fr; }
+    }
+    .config-group label.form-label { margin-bottom: 10px; display: block; }
+    .config-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .config-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1.5px solid var(--border, #2a2a2a);
+      border-radius: 10px;
+      padding: 11px 14px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      color: var(--text-secondary, #aaa);
+      background: var(--card-bg, #0f0f0f);
+      transition: border-color 0.2s, color 0.2s, box-shadow 0.2s, background 0.2s;
+      user-select: none;
+    }
+    .config-option:hover {
+      border-color: rgba(99,102,241,0.5);
+      color: var(--text-primary, #fff);
+    }
+    .config-option.selected {
+      border-color: var(--accent-blue, #6366f1);
+      color: var(--text-primary, #fff);
+      background: rgba(99,102,241,0.08);
+      box-shadow: 0 0 0 2px rgba(99,102,241,0.15);
+    }
+    .config-option-dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      border: 2px solid var(--border, #333);
+      flex-shrink: 0;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .config-option.selected .config-option-dot {
+      background: var(--accent-blue, #6366f1);
+      border-color: var(--accent-blue, #6366f1);
+    }
+    .config-option-price {
+      margin-left: auto;
+      font-size: 0.75rem;
+      color: var(--accent-blue, #6366f1);
+      font-weight: 600;
+      opacity: 0.8;
+    }
+
+    /* ── Price Estimate Card in Summary ── */
+    .price-estimate-card {
+      background: linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(139,92,246,0.08) 100%);
+      border: 1.5px solid rgba(99,102,241,0.4);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .price-estimate-card::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 160px; height: 160px;
+      background: radial-gradient(circle, rgba(99,102,241,0.2), transparent 70%);
+      pointer-events: none;
+    }
+    .price-estimate-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent-blue, #6366f1);
+      margin-bottom: 6px;
+    }
+    .price-estimate-total {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: var(--text-primary, #fff);
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+    .price-breakdown {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .price-breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      color: var(--text-secondary, #aaa);
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .price-breakdown-row:last-child { border-bottom: none; }
+    .price-breakdown-row .amount {
+      font-weight: 600;
+      color: var(--text-primary, #fff);
+    }
+    .price-breakdown-total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-primary, #fff);
+      padding-top: 10px;
+      margin-top: 6px;
+      border-top: 1px solid rgba(99,102,241,0.3);
+    }
+    .price-breakdown-total-row .amount {
+      color: var(--accent-blue, #6366f1);
+      font-size: 1.1rem;
+    }
+
+    /* ── Summary extra rows ── */
+    .sum-config-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border, #1a1a1a);
+      font-size: 0.875rem;
+      color: var(--text-secondary, #aaa);
+    }
+    .sum-config-row:last-child { border-bottom: none; }
+    .sum-config-row span:last-child {
+      font-weight: 600;
+      color: var(--text-primary, #fff);
+    }
+
+    /* ── Section divider ── */
+    .config-section-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted, #555);
+      margin-bottom: 12px;
+      margin-top: 28px;
+    }
+
+    /* ── Floating price pill (Step 1 & 2) ── */
+    .price-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(99,102,241,0.12);
+      border: 1px solid rgba(99,102,241,0.3);
+      border-radius: 100px;
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--accent-blue, #6366f1);
+      margin-top: 16px;
+      transition: all 0.3s;
+    }
+    .price-pill .pill-label {
+      color: var(--text-muted, #888);
+      font-weight: 400;
+      font-size: 0.78rem;
+    }
+
+    /* ── Step nav left side ── */
+    .step-nav-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* ── Glow pulse on selected service ── */
+    .service-option.selected {
+      animation: selGlow 0.4s ease;
+    }
+    @keyframes selGlow {
+      0%   { box-shadow: 0 0 0 0 rgba(99,102,241,0.5); }
+      50%  { box-shadow: 0 0 0 8px rgba(99,102,241,0.1); }
+      100% { box-shadow: 0 0 0 3px rgba(99,102,241,0.2); }
+    }
+
+    /* ── Mobile biz cards ── */
+    @media (max-width: 480px) {
+      .biz-type-grid { grid-template-columns: 1fr; }
+      .price-estimate-total { font-size: 1.9rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== NAV ===== -->
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">Velora<span>.</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html#services">Services</a></li>
+      <li><a href="index.html#portfolio">Work</a></li>
+      <li><a href="index.html#about">About</a></li>
+      <li><a href="index.html#contact">Contact</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="index.html" class="btn btn-ghost">← Back Home</a>
+    </div>
+    <button class="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu">
+  <a href="index.html#services">Services</a>
+  <a href="index.html#portfolio">Work</a>
+  <a href="index.html#about">About</a>
+  <a href="index.html#contact">Contact</a>
+  <a href="index.html" class="btn btn-ghost">← Back Home</a>
+</div>
+
+<!-- ===== HERO ===== -->
+<div style="position: relative; overflow: hidden;">
+  <div style="position: absolute; inset: 0; pointer-events: none;">
+    <div class="hero-orb" style="width:400px;height:400px;background:var(--accent-blue);top:-100px;left:-100px;opacity:0.1;border-radius:50%;filter:blur(100px);"></div>
+    <div class="hero-orb" style="width:300px;height:300px;background:var(--accent-purple);top:-50px;right:100px;opacity:0.08;border-radius:50%;filter:blur(100px);"></div>
+  </div>
+  <div class="sp-hero">
+    <div class="container">
+      <div class="hero-badge" style="margin: 0 auto 24px;">
+        <span class="hero-badge-dot"></span>
+        Free consultation · No commitment
+      </div>
+      <h1>Let's Build Something <span class="gradient-text">Exceptional</span></h1>
+      <p>Tell us about your project in 4 quick steps and we'll reach out with a tailored plan.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PROGRESS BAR ===== -->
+<div class="progress-bar" id="progress-bar">
+  <div class="progress-step active" data-step="1">
+    <div class="step-circle">1</div>
+    <span class="step-label">Services</span>
+  </div>
+  <div class="step-line"></div>
+  <div class="progress-step" data-step="2">
+    <div class="step-circle">2</div>
+    <span class="step-label">Details</span>
+  </div>
+  <div class="step-line"></div>
+  <div class="progress-step" data-step="3">
+    <div class="step-circle">3</div>
+    <span class="step-label">Summary</span>
+  </div>
+  <div class="step-line"></div>
+  <div class="progress-step" data-step="4">
+    <div class="step-circle">4</div>
+    <span class="step-label">Send</span>
+  </div>
+</div>
+
+<!-- ===== FORM STEPS ===== -->
+<div class="form-steps">
+  <div class="container">
+
+    <!-- ══════════════════════════════
+         STEP 1: BUSINESS TYPE + SERVICES
+    ══════════════════════════════ -->
+    <div class="step-panel active" data-step="1">
+
+      <!-- ── Business Type (NEW) ── -->
+      <h2 class="step-title">Select Your Business Type</h2>
+      <p class="step-desc">This helps us tailor pricing and recommendations to your needs.</p>
+
+      <div class="biz-type-grid" id="biz-type-grid">
+
+        <div class="biz-card" data-biz="small" data-base="7000">
+          <div class="biz-card-badge">✓ Selected</div>
+          <span class="biz-card-icon">🏪</span>
+          <div class="biz-card-title">Small Business</div>
+          <div class="biz-card-desc">Shop, gym, salon, café</div>
+          <div class="biz-card-price">Base: ₹7,000</div>
+        </div>
+
+        <div class="biz-card" data-biz="medium" data-base="12000">
+          <div class="biz-card-badge">✓ Selected</div>
+          <span class="biz-card-icon">🏢</span>
+          <div class="biz-card-title">Growing Business</div>
+          <div class="biz-card-desc">Clinic, agency, furniture store</div>
+          <div class="biz-card-price">Base: ₹12,000</div>
+        </div>
+
+        <div class="biz-card" data-biz="high" data-base="25000">
+          <div class="biz-card-badge">✓ Selected</div>
+          <span class="biz-card-icon">🏨</span>
+          <div class="biz-card-title">High Value Business</div>
+          <div class="biz-card-desc">Hotel, school, company</div>
+          <div class="biz-card-price">Base: ₹25,000</div>
+        </div>
+
+      </div>
+
+      <!-- ── Services (existing, unchanged) ── -->
+      <h2 class="step-title" style="margin-top: 8px;">What do you need help with?</h2>
+      <p class="step-desc">Select all services that apply. You can choose multiple.</p>
+
+      <div class="service-categories">
+
+        <!-- Website Development -->
+        <div>
+          <div class="cat-label">Website Development</div>
+          <div class="service-options">
+            <div class="service-option" data-value="Landing Page">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <div class="service-option-name">Landing Page</div>
+                  <div class="service-option-desc">Single-page conversion focused</div>
+                </div>
+                <div class="check">✓</div>
+              </div>
+            </div>
+            <div class="service-option" data-value="Full Website Development">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <div class="service-option-name">Full Website</div>
+                  <div class="service-option-desc">Multi-page custom website</div>
+                </div>
+                <div class="check">✓</div>
+              </div>
+            </div>
+            <div class="service-option" data-value="E-commerce Website">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <div class="service-option-name">E-commerce Website</div>
+                  <div class="service-option-desc">Online store with payments</div>
+                </div>
+                <div class="check">✓</div>
+              </div>
+            </div>
+            <div class="service-option" data-value="WordPress Website">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <div class="service-option-name">WordPress Website</div>
+                  <div class="service-option-desc">CMS-based, easy to manage</div>
+                </div>
+                <div class="check">✓</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SEO -->
+        <div>
+          <div class="cat-label">SEO Optimization</div>
+          <div class="service-options">
+            <div class="service-option" data-value="Technical SEO">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <div class="service-option-name">Technical SEO</div>
+                  <div class="service-option-desc">Site speed, structure, crawlability</div>
+                </div>
+                <div class="check">✓</div>
+              </div>
+            </div>
+            <div class="service-option" data-value="Local SEO">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <div class="service-option-name">Local SEO</div>
+                  <div class="service-option-desc">Google Maps & local rankings</div>
+                </div>
+                <div class="check">✓</div>
+              </div>
+            </div>
+            <div class="service-option" data-value="Full SEO Optimization">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <div class="service-option-name">Full SEO Package</div>
+                  <div class="service-option-desc">End-to-end SEO strategy</div>
+                </div>
+                <div class="check">✓</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Social Media -->
+        <div>
+          <div class="cat-label">Social Media</div>
+          <div class="service-options">
+            <div class="service-option" data-value="Instagram Growth Strategy">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <div class="service-option-name">Instagram Growth</div>
+                  <div class="service-option-desc">Audience building & strategy</div>
+                </div>
+                <div class="check">✓</div>
+              </div>
+            </div>
+            <div class="service-option" data-value="Content Creation">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <div class="service-option-name">Content Creation</div>
+                  <div class="service-option-desc">Reels, posts, stories & copy</div>
+                </div>
+                <div class="check">✓</div>
+              </div>
+            </div>
+            <div class="service-option" data-value="Social Media Management">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <div class="service-option-name">Full Management</div>
+                  <div class="service-option-desc">End-to-end social handling</div>
+                </div>
+                <div class="check">✓</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Branding -->
+        <div>
+          <div class="cat-label">Branding & Design</div>
+          <div class="service-options">
+            <div class="service-option" data-value="Logo Design">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <div class="service-option-name">Logo Design</div>
+                  <div class="service-option-desc">Professional logo & variants</div>
+                </div>
+                <div class="check">✓</div>
+              </div>
+            </div>
+            <div class="service-option" data-value="Brand Identity">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <div class="service-option-name">Brand Identity</div>
+                  <div class="service-option-desc">Full visual identity system</div>
+                </div>
+                <div class="check">✓</div>
+              </div>
+            </div>
+            <div class="service-option" data-value="Website Redesign">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <div class="service-option-name">Website Redesign</div>
+                  <div class="service-option-desc">Modernize existing site</div>
+                </div>
+                <div class="check">✓</div>
+              </div>
+            </div>
+            <div class="service-option" data-value="Website Maintenance">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <div class="service-option-name">Website Maintenance</div>
+                  <div class="service-option-desc">Ongoing support & updates</div>
+                </div>
+                <div class="check">✓</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /categories -->
+
+      <div class="step-nav">
+        <div class="step-nav-left">
+          <div class="selected-count"><span id="service-count">0</span> service(s) selected</div>
+          <!-- Live price pill -->
+          <div class="price-pill" id="price-pill-step1" style="display:none;">
+            <span class="pill-label">Est. from</span>
+            <span id="price-pill-step1-val">₹0</span>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-lg" id="next-step-1">
+          Continue to Details
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div><!-- /step 1 -->
+
+
+    <!-- ══════════════════════════════
+         STEP 2: PROJECT DETAILS + CONFIG
+    ══════════════════════════════ -->
+    <div class="step-panel" data-step="2">
+      <h2 class="step-title">Tell us about yourself</h2>
+      <p class="step-desc">A few quick details so we can tailor our response to you.</p>
+
+      <div style="max-width: 640px;">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="sp-name">Your Name *</label>
+            <input type="text" id="sp-name" class="form-input" placeholder="Jane Smith" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="sp-email">Email Address *</label>
+            <input type="email" id="sp-email" class="form-input" placeholder="jane@company.com" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="sp-business">Business Name *</label>
+            <input type="text" id="sp-business" class="form-input" placeholder="Acme Corp" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="sp-website">Current Website <span style="color:var(--text-muted)">(optional)</span></label>
+            <input type="url" id="sp-website" class="form-input" placeholder="https://yoursite.com" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="sp-budget">Budget Range *</label>
+            <select id="sp-budget" class="form-select">
+              <option value="" disabled selected>Select budget</option>
+              <option value="Under ₹25,000">Under ₹25,000</option>
+              <option value="₹25,000 – ₹50,000">₹25,000 – ₹50,000</option>
+              <option value="₹50,000 – ₹1,00,000">₹50,000 – ₹1,00,000</option>
+              <option value="₹1,00,000 – ₹2,50,000">₹1,00,000 – ₹2,50,000</option>
+              <option value="₹2,50,000+">₹2,50,000+</option>
+              <option value="Let's discuss">Let's discuss</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="sp-timeline">Desired Timeline *</label>
+            <select id="sp-timeline" class="form-select">
+              <option value="" disabled selected>Select timeline</option>
+              <option value="ASAP (under 1 week)">ASAP (under 1 week)</option>
+              <option value="1–2 weeks">1–2 weeks</option>
+              <option value="2–4 weeks">2–4 weeks</option>
+              <option value="1–2 months">1–2 months</option>
+              <option value="2–3 months">2–3 months</option>
+              <option value="Flexible / No rush">Flexible / No rush</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ── NEW: Website Config ── -->
+        <div class="config-section-title">Website Configuration</div>
+
+        <div class="config-grid">
+          <!-- Website Type -->
+          <div class="config-group">
+            <label class="form-label">Website Type</label>
+            <div class="config-options" id="website-type-options">
+              <div class="config-option" data-config="websiteType" data-value="Landing Page" data-add="2000">
+                <div class="config-option-dot"></div>
+                <span>Landing Page</span>
+                <span class="config-option-price">+₹2,000</span>
+              </div>
+              <div class="config-option" data-config="websiteType" data-value="Business Website" data-add="5000">
+                <div class="config-option-dot"></div>
+                <span>Business Website</span>
+                <span class="config-option-price">+₹5,000</span>
+              </div>
+              <div class="config-option" data-config="websiteType" data-value="E-commerce Website" data-add="8000">
+                <div class="config-option-dot"></div>
+                <span>E-commerce Website</span>
+                <span class="config-option-price">+₹8,000</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Number of Pages -->
+          <div class="config-group">
+            <label class="form-label">Number of Pages</label>
+            <div class="config-options" id="pages-options">
+              <div class="config-option" data-config="pages" data-value="1–3 pages" data-pages="2">
+                <div class="config-option-dot"></div>
+                <span>1–3 pages</span>
+                <span class="config-option-price">+₹2,000</span>
+              </div>
+              <div class="config-option" data-config="pages" data-value="3–5 pages" data-pages="4">
+                <div class="config-option-dot"></div>
+                <span>3–5 pages</span>
+                <span class="config-option-price">+₹4,000</span>
+              </div>
+              <div class="config-option" data-config="pages" data-value="5–8 pages" data-pages="7">
+                <div class="config-option-dot"></div>
+                <span>5–8 pages</span>
+                <span class="config-option-price">+₹7,000</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live price pill step 2 -->
+        <div class="price-pill" id="price-pill-step2" style="margin-bottom:8px;">
+          <span class="pill-label">Running estimate</span>
+          <span id="price-pill-step2-val">₹0</span>
+        </div>
+
+      </div>
+
+      <div class="step-nav">
+        <button class="btn btn-ghost btn-back">← Back</button>
+        <button class="btn btn-primary btn-lg" id="next-step-2">
+          Review Summary
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div><!-- /step 2 -->
+
+
+    <!-- ══════════════════════════════
+         STEP 3: SUMMARY
+    ══════════════════════════════ -->
+    <div class="step-panel" data-step="3">
+      <h2 class="step-title">Review your project brief</h2>
+      <p class="step-desc">Everything look good? You can go back to make changes.</p>
+
+      <div style="max-width: 680px;">
+
+        <!-- ── Price Estimate Card (NEW) ── -->
+        <div class="price-estimate-card">
+          <div class="price-estimate-label">✦ Estimated Project Cost</div>
+          <div class="price-estimate-total" id="sum-total-price">₹0</div>
+          <div class="price-breakdown" id="price-breakdown">
+            <!-- populated by JS -->
+          </div>
+        </div>
+
+        <!-- ── Project Config Card (NEW) ── -->
+        <div class="summary-card" id="summary-config-card">
+          <h3>Project Configuration</h3>
+          <div class="sum-config-row">
+            <span>Business Type</span>
+            <span id="sum-biz-type">—</span>
+          </div>
+          <div class="sum-config-row">
+            <span>Website Type</span>
+            <span id="sum-website-type">—</span>
+          </div>
+          <div class="sum-config-row">
+            <span>Number of Pages</span>
+            <span id="sum-pages">—</span>
+          </div>
+        </div>
+
+        <!-- ── Services Card (existing) ── -->
+        <div class="summary-card">
+          <h3>Selected Services</h3>
+          <div class="summary-tags" id="summary-services"></div>
+        </div>
+
+        <!-- ── Details Card (existing) ── -->
+        <div class="summary-card">
+          <h3>Your Details</h3>
+          <div class="summary-detail">
+            <span>Name</span>
+            <span id="sum-name">—</span>
+          </div>
+          <div class="summary-detail">
+            <span>Email</span>
+            <span id="sum-email">—</span>
+          </div>
+          <div class="summary-detail">
+            <span>Business</span>
+            <span id="sum-business">—</span>
+          </div>
+          <div class="summary-detail">
+            <span>Budget</span>
+            <span id="sum-budget">—</span>
+          </div>
+          <div class="summary-detail">
+            <span>Timeline</span>
+            <span id="sum-timeline">—</span>
+          </div>
+          <div class="summary-detail" id="website-row" style="display: none;">
+            <span>Current Website</span>
+            <span id="sum-website">—</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="step-nav">
+        <button class="btn btn-ghost btn-back">← Back</button>
+        <button class="btn btn-primary btn-lg" id="next-step-3">
+          Generate My Message
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div><!-- /step 3 -->
+
+
+    <!-- ══════════════════════════════
+         STEP 4: SEND
+    ══════════════════════════════ -->
+    <div class="step-panel" data-step="4">
+      <h2 class="step-title">You're all set! 🎉</h2>
+      <p class="step-desc">Here's your personalized message. Send it to us via email or WhatsApp.</p>
+
+      <div style="max-width: 680px;">
+        <div class="auto-message-box">
+          <div class="auto-message-label">✦ Your Auto-Generated Message</div>
+          <div class="auto-message-text" id="auto-message"></div>
+          <button class="copy-btn" id="copy-btn">⎘ Copy Message</button>
+        </div>
+
+        <div style="display: flex; gap: 14px; margin-top: 28px; flex-wrap: wrap; align-items: center;">
+          <a href="#" class="whatsapp-btn" id="whatsapp-btn" target="_blank">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+            Send via WhatsApp
+          </a>
+          <a href="#" class="btn btn-outline btn-lg" id="email-btn">
+            ✉ Send via Email
+          </a>
+        </div>
+
+        <div style="margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+          <p style="font-size: 0.88rem; color: var(--text-secondary);">Not satisfied with your selection?</p>
+          <button class="btn btn-ghost" onclick="location.reload()">← Start Over</button>
+        </div>
+      </div>
+    </div><!-- /step 4 -->
+
+  </div><!-- /container -->
+</div><!-- /form-steps -->
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="container">
+    <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+      <p>© 2025 Velora Studio. All rights reserved.</p>
+      <a href="index.html" style="font-size: 0.85rem; color: var(--text-secondary); text-decoration: none;">← Back to Home</a>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+
+<!-- ═══════════════════════════════════════════
+     SMART PROJECT CALCULATOR — MAIN SCRIPT
+════════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  /* ─────────────────────────────────────────
+     STATE
+  ───────────────────────────────────────── */
+  const state = {
+    currentStep: 1,
+    bizType: null,       // 'small' | 'medium' | 'high'
+    bizLabel: '',
+    bizBase: 0,
+    services: [],        // array of service strings
+    websiteType: null,   // 'Landing Page' | 'Business Website' | 'E-commerce Website'
+    websiteTypeAdd: 0,
+    pages: null,         // '1–3 pages' | '3–5 pages' | '5–8 pages'
+    pagesCount: 0,
+  };
+
+  /* ─────────────────────────────────────────
+     PRICING ENGINE
+  ───────────────────────────────────────── */
+  const SERVICE_PRICES = {
+    'Landing Page':              2000,
+    'Full Website Development':  5000,
+    'E-commerce Website':        8000,
+    'Technical SEO':             3000,
+    'Local SEO':                 3000,
+    'Full SEO Optimization':     3000,
+    'Instagram Growth Strategy': 3000,
+    'Content Creation':          3000,
+    'Social Media Management':   3000,
+    'Logo Design':               2000,
+    'Brand Identity':            2000,
+    'Website Redesign':          5000,
+    'WordPress Website':         5000,
+    'Website Maintenance':       2000,
+  };
+  const PAGE_PRICE = 1000;
+
+  function calculatePrice() {
+    const breakdown = [];
+    let total = 0;
+
+    // Base price
+    if (state.bizBase > 0) {
+      breakdown.push({ label: `Base — ${state.bizLabel}`, amount: state.bizBase });
+      total += state.bizBase;
+    }
+
+    // Services
+    state.services.forEach(svc => {
+      const add = SERVICE_PRICES[svc] || 0;
+      if (add > 0) {
+        breakdown.push({ label: svc, amount: add });
+        total += add;
+      }
+    });
+
+    // Website type
+    if (state.websiteTypeAdd > 0) {
+      breakdown.push({ label: `Website Type — ${state.websiteType}`, amount: state.websiteTypeAdd });
+      total += state.websiteTypeAdd;
+    }
+
+    // Pages
+    if (state.pagesCount > 0) {
+      const pagesTotal = state.pagesCount * PAGE_PRICE;
+      breakdown.push({ label: `Pages (${state.pagesCount} avg × ₹1,000)`, amount: pagesTotal });
+      total += pagesTotal;
+    }
+
+    return { total, breakdown };
+  }
+
+  function formatCurrency(n) {
+    return '₹' + n.toLocaleString('en-IN');
+  }
+
+  /* ─────────────────────────────────────────
+     STEP NAVIGATION (smooth transitions)
+  ───────────────────────────────────────── */
+  function goToStep(targetStep) {
+    const panels = document.querySelectorAll('.step-panel');
+    const current = document.querySelector(`.step-panel[data-step="${state.currentStep}"]`);
+    const next    = document.querySelector(`.step-panel[data-step="${targetStep}"]`);
+    if (!next) return;
+
+    // Exit current
+    if (current) {
+      current.classList.add('exit-left');
+      setTimeout(() => {
+        current.classList.remove('active', 'exit-left');
+        current.style.display = 'none';
+      }, 350);
+    }
+
+    // Enter next
+    setTimeout(() => {
+      next.style.display = 'block';
+      requestAnimationFrame(() => {
+        next.classList.add('active');
+      });
+    }, 200);
+
+    // Update progress bar
+    document.querySelectorAll('.progress-step').forEach(s => {
+      const n = parseInt(s.dataset.step);
+      s.classList.toggle('active',   n === targetStep);
+      s.classList.toggle('completed', n < targetStep);
+    });
+
+    state.currentStep = targetStep;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* ─────────────────────────────────────────
+     BUSINESS TYPE CARDS
+  ───────────────────────────────────────── */
+  const BIZ_LABELS = { small: 'Small Business', medium: 'Growing Business', high: 'High Value Business' };
+
+  document.querySelectorAll('.biz-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.biz-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      state.bizType  = card.dataset.biz;
+      state.bizBase  = parseInt(card.dataset.base, 10);
+      state.bizLabel = BIZ_LABELS[state.bizType];
+      updateLivePill();
+    });
+  });
+
+  /* ─────────────────────────────────────────
+     SERVICE OPTIONS (preserve existing logic)
+  ───────────────────────────────────────── */
+  document.querySelectorAll('.service-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      opt.classList.toggle('selected');
+      const val = opt.dataset.value;
+      if (opt.classList.contains('selected')) {
+        if (!state.services.includes(val)) state.services.push(val);
+      } else {
+        state.services = state.services.filter(s => s !== val);
+      }
+      document.getElementById('service-count').textContent = state.services.length;
+      updateLivePill();
+    });
+  });
+
+  /* ─────────────────────────────────────────
+     CONFIG OPTIONS (Website Type & Pages)
+  ───────────────────────────────────────── */
+  document.querySelectorAll('.config-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      const group = opt.dataset.config;
+      // Deselect siblings
+      document.querySelectorAll(`.config-option[data-config="${group}"]`)
+        .forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+
+      if (group === 'websiteType') {
+        state.websiteType    = opt.dataset.value;
+        state.websiteTypeAdd = parseInt(opt.dataset.add, 10) || 0;
+      } else if (group === 'pages') {
+        state.pages      = opt.dataset.value;
+        state.pagesCount = parseInt(opt.dataset.pages, 10) || 0;
+      }
+      updateLivePill();
+    });
+  });
+
+  /* ─────────────────────────────────────────
+     LIVE PRICE PILL
+  ───────────────────────────────────────── */
+  function updateLivePill() {
+    const { total } = calculatePrice();
+    const fmt = formatCurrency(total);
+
+    // Step 1 pill
+    const pill1 = document.getElementById('price-pill-step1');
+    const pill1Val = document.getElementById('price-pill-step1-val');
+    if (state.bizBase > 0 || state.services.length > 0) {
+      pill1.style.display = 'inline-flex';
+      pill1Val.textContent = fmt;
+    }
+
+    // Step 2 pill
+    const pill2Val = document.getElementById('price-pill-step2-val');
+    if (pill2Val) pill2Val.textContent = fmt;
+  }
+
+  /* ─────────────────────────────────────────
+     POPULATE SUMMARY (Step 3)
+  ───────────────────────────────────────── */
+  function populateSummary() {
+    // Project config
+    document.getElementById('sum-biz-type').textContent     = state.bizLabel || '—';
+    document.getElementById('sum-website-type').textContent = state.websiteType || '—';
+    document.getElementById('sum-pages').textContent        = state.pages || '—';
+
+    // Existing details
+    const name     = document.getElementById('sp-name')?.value     || '';
+    const email    = document.getElementById('sp-email')?.value    || '';
+    const business = document.getElementById('sp-business')?.value || '';
+    const budget   = document.getElementById('sp-budget')?.value   || '';
+    const timeline = document.getElementById('sp-timeline')?.value || '';
+    const website  = document.getElementById('sp-website')?.value  || '';
+
+    document.getElementById('sum-name').textContent     = name     || '—';
+    document.getElementById('sum-email').textContent    = email    || '—';
+    document.getElementById('sum-business').textContent = business || '—';
+    document.getElementById('sum-budget').textContent   = budget   || '—';
+    document.getElementById('sum-timeline').textContent = timeline || '—';
+
+    const websiteRow = document.getElementById('website-row');
+    if (website && websiteRow) {
+      websiteRow.style.display = 'flex';
+      document.getElementById('sum-website').textContent = website;
+    }
+
+    // Services tags
+    const tagsEl = document.getElementById('summary-services');
+    if (tagsEl) {
+      if (state.services.length === 0) {
+        tagsEl.innerHTML = '<span style="color:var(--text-muted);font-size:0.85rem;">No services selected</span>';
+      } else {
+        tagsEl.innerHTML = state.services
+          .map(s => `<span class="summary-tag">${s}</span>`)
+          .join('');
+      }
+    }
+
+    // Price breakdown
+    const { total, breakdown } = calculatePrice();
+    document.getElementById('sum-total-price').textContent = formatCurrency(total);
+
+    const breakdownEl = document.getElementById('price-breakdown');
+    if (breakdownEl) {
+      breakdownEl.innerHTML = breakdown.map(row =>
+        `<div class="price-breakdown-row">
+          <span>${row.label}</span>
+          <span class="amount">${formatCurrency(row.amount)}</span>
+        </div>`
+      ).join('') + `
+        <div class="price-breakdown-total-row">
+          <span>Total Estimate</span>
+          <span class="amount">${formatCurrency(total)}</span>
+        </div>`;
+    }
+  }
+
+  /* ─────────────────────────────────────────
+     GENERATE AUTO MESSAGE (Step 4)
+  ───────────────────────────────────────── */
+  function generateMessage() {
+    const name     = document.getElementById('sp-name')?.value     || 'there';
+    const business = document.getElementById('sp-business')?.value || 'my business';
+    const budget   = document.getElementById('sp-budget')?.value   || 'Not specified';
+    const timeline = document.getElementById('sp-timeline')?.value || 'Flexible';
+    const website  = document.getElementById('sp-website')?.value;
+
+    const { total } = calculatePrice();
+    const servicesText = state.services.length > 0
+      ? state.services.join(', ')
+      : 'Not specified';
+
+    let msg = `Hello Velora Studio,\n\n`;
+    msg += `My name is ${name} and I run ${business}.\n`;
+    msg += `Business Type: ${state.bizLabel || 'Not specified'}\n\n`;
+    msg += `I'm interested in the following services:\n${servicesText}\n\n`;
+    msg += `Website Type: ${state.websiteType || 'Not specified'}\n`;
+    msg += `Number of Pages: ${state.pages || 'Not specified'}\n\n`;
+    msg += `Budget Range: ${budget}\n`;
+    msg += `Desired Timeline: ${timeline}\n`;
+    if (website) msg += `Current Website: ${website}\n`;
+    msg += `\n💰 Estimated Project Cost: ${formatCurrency(total)}\n`;
+    msg += `\nLooking forward to hearing from you!\n\nBest regards,\n${name}`;
+
+    return msg;
+  }
+
+  /* ─────────────────────────────────────────
+     NAVIGATION BUTTONS
+  ───────────────────────────────────────── */
+
+  // Step 1 → 2
+  document.getElementById('next-step-1')?.addEventListener('click', () => {
+    if (!state.bizType) {
+      alert('Please select your business type before continuing.');
+      return;
+    }
+    if (state.services.length === 0) {
+      alert('Please select at least one service before continuing.');
+      return;
+    }
+    goToStep(2);
+    updateLivePill();
+  });
+
+  // Step 2 → 3
+  document.getElementById('next-step-2')?.addEventListener('click', () => {
+    const name     = document.getElementById('sp-name')?.value.trim();
+    const email    = document.getElementById('sp-email')?.value.trim();
+    const business = document.getElementById('sp-business')?.value.trim();
+    const budget   = document.getElementById('sp-budget')?.value;
+    const timeline = document.getElementById('sp-timeline')?.value;
+
+    if (!name || !email || !business || !budget || !timeline) {
+      alert('Please fill in all required fields before continuing.');
+      return;
+    }
+    populateSummary();
+    goToStep(3);
+  });
+
+  // Step 3 → 4
+  document.getElementById('next-step-3')?.addEventListener('click', () => {
+    const msg = generateMessage();
+
+    // Render message
+    const msgEl = document.getElementById('auto-message');
+    if (msgEl) msgEl.textContent = msg;
+
+    // WhatsApp link
+    const waBtn = document.getElementById('whatsapp-btn');
+    if (waBtn) {
+      waBtn.href = `https://wa.me/+919999999999?text=${encodeURIComponent(msg)}`;
+    }
+
+    // Email link
+    const emailBtn = document.getElementById('email-btn');
+    if (emailBtn) {
+      const sub = encodeURIComponent(`New Project Inquiry — ${document.getElementById('sp-business')?.value || 'Client'}`);
+      emailBtn.href = `mailto:hello@velorastudio.com?subject=${sub}&body=${encodeURIComponent(msg)}`;
+    }
+
+    goToStep(4);
+  });
+
+  // Back buttons
+  document.querySelectorAll('.btn-back').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (state.currentStep > 1) goToStep(state.currentStep - 1);
+    });
+  });
+
+  /* ─────────────────────────────────────────
+     COPY BUTTON
+  ───────────────────────────────────────── */
+  document.getElementById('copy-btn')?.addEventListener('click', function () {
+    const msg = document.getElementById('auto-message')?.textContent || '';
+    navigator.clipboard.writeText(msg).then(() => {
+      this.textContent = '✓ Copied!';
+      setTimeout(() => { this.textContent = '⎘ Copy Message'; }, 2000);
+    }).catch(() => {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = msg;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      this.textContent = '✓ Copied!';
+      setTimeout(() => { this.textContent = '⎘ Copy Message'; }, 2000);
+    });
+  });
+
+  /* ─────────────────────────────────────────
+     HAMBURGER MENU (preserve existing)
+  ───────────────────────────────────────── */
+  const hamburger = document.querySelector('.hamburger');
+  const mobileMenu = document.querySelector('.mobile-menu');
+  if (hamburger && mobileMenu) {
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('open');
+      mobileMenu.classList.toggle('open');
+    });
+  }
+
+  /* ─────────────────────────────────────────
+     INIT — show step 1
+  ───────────────────────────────────────── */
+  const firstPanel = document.querySelector('.step-panel[data-step="1"]');
+  if (firstPanel) {
+    firstPanel.style.display = 'block';
+    firstPanel.classList.add('active');
+  }
+
+})();
+</script>
+
+</body>
+</html>
